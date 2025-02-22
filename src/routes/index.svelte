@@ -1,28 +1,18 @@
 <script lang="ts">
-    import '../app.css';
+    import Titulo from "$lib/components/compartilhados/Titulo.svelte";
+    import categorias from "$lib/json/categorias.json";
+    import {minhaLista} from "$lib/stores/minhaLista"
+    import { beforeNavigate } from "$app/navigation";
+    import Categoria from "$lib/components/paginas/index/Categoria.svelte";
+    import TagLink from "$lib/components/compartilhados/TagLink.svelte";
 
-    import Cabecalho from '$lib/components/Cabecalho.svelte';
-    import MinhaLista from '$lib/components/MinhaLista.svelte';
-    import Titulo from '$lib/components/Titulo.svelte';
+    $: listaVazia = $minhaLista.length === 0;
 
-    import categorias from '$lib/json/categorias.json';
-    import Categoria from '$lib/components/Categoria.svelte';
-    import Tag from '$lib/components/Tag.svelte';
-    import Rodape from '$lib/components/Rodape.svelte';
-
-    let minhaLista: string[] = []
-
-    function adicionarIngrediente(evento: CustomEvent<string>) {
-        const ingrediente = evento.detail;
-        minhaLista = [...minhaLista, ingrediente]
-    }
-
-    function removerIngrediente(evento: CustomEvent<string>) {
-        const ingrediente = evento.detail;
-        minhaLista = minhaLista.filter(
-            (item) => item !== ingrediente
-        )
-    }
+    beforeNavigate((navigation) => {
+        if (listaVazia && navigation.to?.pathname === '/receitas') {
+            navigation.cancel()
+        }
+    })
 
 </script>
 
@@ -30,77 +20,34 @@
     <title>Alura Cook</title>
 </svelte:head>
 
-<div class="container-principal">
-    <Cabecalho />
-    
-    <div class="estilo-principal">
-        {#if minhaLista.length}
-            <div class="minha-lista-container">
-                <MinhaLista ingredientes={minhaLista}/>
-
-                <div class="divisoria"></div>
-            </div>
-        {/if}
-        <main>
-            <Titulo tag="h1">Ingredientes</Titulo>
-            <div class="info">
-                <p>Selecione abaixo os ingredientes que você deseja usar nesta refeição:</p>
-                <p>*Atenção consideramos que você tenha em casa sal, pimenta e água.</p>
-            </div>
-
-            <ul class="categorias">
-            {#each categorias as categoria (categoria.nome)}
-                <li>
-                    <Categoria 
-                        {categoria}
-                        on:adicionarIngrediente={adicionarIngrediente}
-                        on:removerIngrediente={removerIngrediente}
-                    />
-                </li>
-            {/each}
-            </ul>
-
-            <div class="buscar-receitas">
-                <a href="/receitas">
-                    <Tag ativa={true} tamanho="lg">Buscar Receitas!</Tag>
-                </a>
-            </div>
-
-        </main>
+<main>
+    <Titulo tag="h1">Ingredientes</Titulo>
+    <div class="info">
+        <p>
+            Selecione abaixo os ingredientes que você deseja usar nesta
+            refeição:
+        </p>
+        <p>*Atenção consideramos que você tenha em casa sal, pimenta e água.</p>
     </div>
 
-    <Rodape/>
+    <ul class="categorias">
+        {#each categorias as categoria (categoria.nome)}
+            <li>
+                <Categoria {categoria} />
+            </li>
+        {/each}
+    </ul>
 
-</div>
+    <div class="buscar-receitas">
+       <TagLink href="/receitas" desabilitada={listaVazia}>Buscar recitas!</TagLink>
+    </div>
+</main>
 
 <style>
-    .container-principal {
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-    }
- 
-    .estilo-principal {
-        text-align: center;
-        padding: 0 5vw 3.375rem;
-        flex: 1;
-    }
- 
-    .minha-lista-container {
-        margin-bottom: 2rem;
-    }
-
-    .divisoria {
-        width: 40vw;
-        height: 2px;
-        background-color: var(--verde);
-        margin: 0 auto;
-    }
- 
     .info {
         margin-bottom: 3.375rem;
     }
- 
+
     .info > p {
         line-height: 2rem;
     }
@@ -118,5 +65,4 @@
         display: flex;
         justify-content: center;
     }
-    
 </style>
